@@ -2,17 +2,6 @@
 # -*- coding: utf-8 -*-
 # encoding=utf-8 vi:ts=4:sw=4:expandtab:ft=python
 """
-/***************************************************************************
-  *
-  * Copyright (c) 2019 Baidu.com, Inc. All Rights Reserved
-  * @file dygraph_mnist.py
-  * @author zhengtianyu
-  * @date 2019/4/11 4:57 PM
-  * @brief dygraph mnist
-  *
-  **************************************************************************/
-"""
-
 from __future__ import print_function
 
 import numpy as np

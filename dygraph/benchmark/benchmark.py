@@ -1,17 +1,6 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
 # encoding=utf-8 vi:ts=4:sw=4:expandtab:ft=python
-"""
-/***************************************************************************
-  *
-  * Copyright (c) 2019 Baidu.com, Inc. All Rights Reserved
-  * @file benchmark.py
-  * @author zhengtianyu
-  * @date 2019/5/15 2:19 PM
-  * @brief benchmark
-  *
-  **************************************************************************/
-"""
 import time
 
 

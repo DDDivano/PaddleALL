@@ -9,7 +9,10 @@ import paddle.fluid as fluid
 from paddle.fluid.optimizer import SGDOptimizer
 from paddle.fluid.dygraph.nn import Conv2D, Pool2D, FC
 from paddle.fluid.dygraph.base import to_variable
-from benchmark import AverageMeter, ProgressMeter, Tools
+import sys
+
+sys.path.append("../tools")
+from tools.benchmark import AverageMeter, ProgressMeter, Tools
 
 
 class SimpleImgConvPool(fluid.dygraph.Layer):

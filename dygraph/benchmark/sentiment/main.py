@@ -22,6 +22,8 @@ from paddle.fluid.dygraph.base import to_variable
 import nets
 import reader
 from utils import ArgumentGroup
+import sys
+sys.path.append("../tools")
 from benchmark import AverageMeter, ProgressMeter, Tools
 
 

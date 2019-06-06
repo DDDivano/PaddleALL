@@ -68,6 +68,7 @@ run_models(){
 	echo "----model benchmark done!----"
 	echo "----run mem benchmark----"
 	nvidia-smi -lms 250 --query-gpu=memory.total,memory.used,memory.free,index,timestamp,name --format=csv -i $cardno > $workfolder/$modelname/${modelname}_mem.log &
+	pid=$!
 	export FLAGS_fraction_of_gpu_memory_to_use=0.0
 	# echo "FLAGS_fraction_of_gpu_memory_to_use:"$FLAGS_fraction_of_gpu_memory_to_use
 	export CUDA_VISIBLE_DEVICES=$cardno
@@ -76,7 +77,7 @@ run_models(){
 	# wait gpu count exit
 	sleep 2
 	# kill gpu count 
-	kill -9 `ps -ef | grep "nvidia-smi -lms 250" | grep -v grep | awk '{print $2}'`
+	kill -9 $pid
 	echo "----mem benchmark done!----"
 	echo "----${modelname} done!----"
 	cd $workdir
@@ -86,5 +87,9 @@ run_models(){
 # -------- 添加模型修改此处即可 ---------#
 # run models
 # mnist
-# run_models "./models" "./dygraph_mnist.py" "mnist"
-# run_models "./models" "./reinforce.py" "reinforce"
+run_models "./models" "./dygraph_mnist.py" "mnist"
+run_models "./models" "./reinforce.py" "reinforce"
+
+
+
+echo "----ALL DONE!!!----"

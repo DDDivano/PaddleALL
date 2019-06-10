@@ -63,7 +63,7 @@ run_models(){
 	export CUDA_VISIBLE_DEVICES=$cardno
 	export FLAGS_fraction_of_gpu_memory_to_use=0.92
 	echo "----run model benchmark----"
-	python3.6 -u $file >  $workfolder/$modelname/$modelname.log 2>&1 
+	python3.6 -u $file --benchmark >  $workfolder/$modelname/$modelname.log 2>&1 
 	echo $workfolder/$modelname/${modelname}_mem.log
 	echo "----model benchmark done!----"
 	echo "----run mem benchmark----"
@@ -87,8 +87,8 @@ run_models(){
 # -------- 添加模型修改此处即可 ---------#
 # run models
 # mnist
-run_models "./models" "./dygraph_mnist.py" "mnist"
-run_models "./models" "./reinforce.py" "reinforce"
+run_models "./mnist" "./train.py" "mnist"
+run_models "./sentiment" "./train.py" "sentiment"
 
 
 

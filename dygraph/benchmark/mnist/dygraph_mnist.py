@@ -9,6 +9,9 @@ from paddle.fluid.dygraph.nn import Conv2D, Pool2D, FC
 from paddle.fluid.dygraph.base import to_variable
 from benchmark import AverageMeter, ProgressMeter, Tools
 import sys
+import argparse
+
+
 class SimpleImgConvPool(fluid.dygraph.Layer):
     def __init__(self,
                  name_scope,
@@ -146,7 +149,9 @@ def test_p( reader, model, batch_size):
     print( "tatal_sampe", total_same, total_sample)
     print( "precision", total_same * 1.0 / total_sample )
 def train_mnist():
-    epoch_num = 20
+    epoch_num = 10
+    if args.benchmark:
+        epoch_num = 1
     BATCH_SIZE = 256
     with fluid.dygraph.guard():
         mnist = MNIST("mnist")
@@ -198,24 +203,9 @@ def train_mnist():
             print("Loss at epoch {} , Test avg_loss is: {}, acc is: {}".format(epoch, test_cost, test_acc))
         fluid.dygraph.save_persistables(mnist.state_dict(), "save_dir")
         print("checkpoint saved")
-    with fluid.dygraph.guard():
-        mnist_infer = MNIST("mnist")
-        # load checkpoint
-        mnist_infer.load_dict(
-            fluid.dygraph.load_persistables("save_dir"))
-        print("checkpoint loaded")
-        # start evaluate mode
-        mnist_infer.eval()
-        def load_image(file):
-            im = Image.open(file).convert('L')
-            im = im.resize((28, 28), Image.ANTIALIAS)
-            im = np.array(im).reshape(1, 1, 28, 28).astype(np.float32)
-            im = im / 255.0 * 2.0 - 1.0
-            return im
-        cur_dir = os.path.dirname(os.path.realpath(__file__))
-        tensor_img = load_image(cur_dir + '/image/infer_3.png')
-        results = mnist_infer(to_variable(tensor_img))
-        lab = np.argsort(results.numpy())
-        print("Inference result of image/infer_3.png is: %d" % lab[0][-1])
+    
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-b", "--benchmark", action="store_true", help="turn on benchmark")
+    args = parser.parse_args()
     train_mnist()

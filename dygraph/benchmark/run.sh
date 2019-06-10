@@ -73,7 +73,7 @@ run_models(){
 	# echo "FLAGS_fraction_of_gpu_memory_to_use:"$FLAGS_fraction_of_gpu_memory_to_use
 	export CUDA_VISIBLE_DEVICES=$cardno
 	# echo "CUDA_VISIBLE_DEVICES:"$CUDA_VISIBLE_DEVICES
-	python3.6 -u $file
+	python3.6 -u $file --benchmark
 	# wait gpu count exit
 	sleep 2
 	# kill gpu count 

@@ -22,10 +22,7 @@ from paddle.fluid.dygraph.base import to_variable
 import nets
 import reader
 from utils import ArgumentGroup
-import sys
-sys.path.append("../tools")
 from benchmark import AverageMeter, ProgressMeter, Tools
-
 
 parser = argparse.ArgumentParser(__doc__)
 model_g = ArgumentGroup(parser, "model", "model configuration and paths.")
@@ -33,9 +30,9 @@ model_g.add_arg("checkpoints", str, "checkpoints", "Path to save checkpoints")
 
 train_g = ArgumentGroup(parser, "training", "training options.")
 train_g.add_arg("epoch", int, 10, "Number of epoches for training.")
-train_g.add_arg("save_steps", int, 1000,
+train_g.add_arg("save_steps", int, 3000,
                 "The steps interval to save checkpoints.")
-train_g.add_arg("validation_steps", int, 200,
+train_g.add_arg("validation_steps", int, 2000,
                 "The steps interval to evaluate model performance.")
 train_g.add_arg("lr", float, 0.002, "The Learning rate value for training.")
 train_g.add_arg("padding_size", int, 150,
@@ -56,12 +53,11 @@ data_g.add_arg("batch_size", int, 16,
 data_g.add_arg("random_seed", int, 0, "Random seed.")
 
 run_type_g = ArgumentGroup(parser, "run_type", "running type options.")
-run_type_g.add_arg("use_cuda", bool, False, "If set, use GPU for training.")
+run_type_g.add_arg("use_cuda", bool, True, "If set, use GPU for training.")
 run_type_g.add_arg("do_train", bool, True, "Whether to perform training.")
 run_type_g.add_arg("do_val", bool, True, "Whether to perform evaluation.")
 run_type_g.add_arg("do_infer", bool, False, "Whether to perform inference.")
-run_type_g.add_arg("profile_steps", int, 15000,
-                   "The steps interval to record the performance.")
+parser.add_argument("-b", "--benchmark", action="store_true", help="turn on benchmark")
 
 args = parser.parse_args()
 
@@ -72,21 +68,11 @@ else:
     place = fluid.CPUPlace()
     dev_count = 1
 
-import paddle.fluid.profiler as profiler
-import contextlib
-
-
-@contextlib.contextmanager
-def profile_context(profile=True):
-    if profile:
-        with profiler.profiler('All', 'total', '/tmp/profile_file'):
-            yield
-    else:
-        yield
-
 
 def train():
     with fluid.dygraph.guard(place):
+        if args.benchmark:
+            args.epoch = 1
         processor = reader.SentaProcessor(
             data_dir=args.data_dir,
             vocab_path=args.vocab_path,
@@ -115,113 +101,99 @@ def train():
         sgd_optimizer = fluid.optimizer.Adagrad(learning_rate=args.lr)
         steps = 0
         total_cost, total_acc, total_num_seqs = [], [], []
-
+        length = len(list(enumerate(train_data_generator())))
         for eop in range(args.epoch):
             time_begin = time.time()
-            # define eval
             batch_time = AverageMeter('Time', ':6.3f')
             data_time = AverageMeter('Data', ':6.3f')
-            progress = ProgressMeter(10000, batch_time, data_time,
-                                     prefix="epoch: [{}]".format(10000))
+            progress = ProgressMeter(length, batch_time, data_time, prefix="epoch: [{}]".format(eop))
             end = Tools.time()
             for batch_id, data in enumerate(train_data_generator()):
-                enable_profile = steps > args.profile_steps
+                data_time.update(Tools.time() - end)
+                steps += 1
+                doc = to_variable(
+                    np.array([
+                        np.pad(x[0][0:args.padding_size], (
+                            0, args.padding_size - len(x[0][
+                                0:args.padding_size])),
+                               'constant',
+                               constant_values=(args.vocab_size)) for x in data
+                    ]).astype('int64').reshape(-1, 1))
 
-                with profile_context(enable_profile):
+                label = to_variable(
+                    np.array([x[1] for x in data]).astype('int64').reshape(
+                        args.batch_size, 1))
 
-                    steps += 1
-                    doc = to_variable(
-                        np.array([
-                            np.pad(x[0][0:args.padding_size], (
-                                0, args.padding_size - len(x[0][
-                                    0:args.padding_size])),
+                cnn_net.train()
+                avg_cost, prediction, acc = cnn_net(doc, label)
+                avg_cost.backward()
+                batch_time.update(Tools.time() - end)
+                np_mask = (doc.numpy() != args.vocab_size).astype('int32')
+                word_num = np.sum(np_mask)
+                sgd_optimizer.minimize(avg_cost)
+                cnn_net.clear_gradients()
+                total_cost.append(avg_cost.numpy() * word_num)
+                total_acc.append(acc.numpy() * word_num)
+                total_num_seqs.append(word_num)
+
+                if steps % args.skip_steps == 0:
+                    time_end = time.time()
+                    used_time = time_end - time_begin
+                    progress.print(batch_id + 1)
+                    #print("step: %d, ave loss: %f, "
+                    #      "ave acc: %f, speed: %f steps/s" %
+                    #      (steps, np.sum(total_cost) / np.sum(total_num_seqs),
+                    #       np.sum(total_acc) / np.sum(total_num_seqs),
+                    #       args.skip_steps / used_time))
+                    total_cost, total_acc, total_num_seqs = [], [], []
+                    time_begin = time.time()
+
+                if steps % args.validation_steps == 0:
+                    total_eval_cost, total_eval_acc, total_eval_num_seqs = [], [], []
+                    cnn_net.eval()
+                    eval_steps = 0
+                    for eval_batch_id, eval_data in enumerate(
+                            eval_data_generator()):
+                        eval_np_doc = np.array([
+                            np.pad(x[0][0:args.padding_size],
+                                   (0, args.padding_size -
+                                    len(x[0][0:args.padding_size])),
                                    'constant',
                                    constant_values=(args.vocab_size))
-                            for x in data
-                        ]).astype('int64').reshape(-1, 1))
+                            for x in eval_data
+                        ]).astype('int64').reshape(1, -1)
+                        eval_label = to_variable(
+                            np.array([x[1] for x in eval_data]).astype('int64')
+                            .reshape(args.batch_size, 1))
+                        eval_doc = to_variable(eval_np_doc.reshape(-1, 1))
+                        eval_avg_cost, eval_prediction, eval_acc = cnn_net(
+                            eval_doc, eval_label)
 
-                    label = to_variable(
-                        np.array([x[1] for x in data]).astype('int64').reshape(
-                            args.batch_size, 1))
+                        eval_np_mask = (
+                            eval_np_doc != args.vocab_size).astype('int32')
+                        eval_word_num = np.sum(eval_np_mask)
+                        total_eval_cost.append(eval_avg_cost.numpy() *
+                                               eval_word_num)
+                        total_eval_acc.append(eval_acc.numpy() * eval_word_num)
+                        total_eval_num_seqs.append(eval_word_num)
 
-                    cnn_net.train()
-                    avg_cost, prediction, acc = cnn_net(doc, label)
-                    avg_cost.backward()
+                        eval_steps += 1
 
-                    np_mask = (doc.numpy() != args.vocab_size).astype('int32')
-                    word_num = np.sum(np_mask)
-                    sgd_optimizer.minimize(avg_cost)
-                    cnn_net.clear_gradients()
-                    batch_time.update(Tools.time() - end)
-                    total_cost.append(avg_cost.numpy() * word_num)
-                    total_acc.append(acc.numpy() * word_num)
-                    total_num_seqs.append(word_num)
+                    time_end = time.time()
+                    used_time = time_end - time_begin
+                    print("Final validation result: step: %d, ave loss: %f, "
+                          "ave acc: %f, speed: %f steps/s" %
+                          (steps, np.sum(total_eval_cost) /
+                           np.sum(total_eval_num_seqs), np.sum(total_eval_acc) /
+                           np.sum(total_eval_num_seqs), eval_steps / used_time))
+                    time_begin = time.time()
 
-                    if steps % args.skip_steps == 0:
-                        time_end = time.time()
-                        used_time = time_end - time_begin
-                        print("step: %d, ave loss: %f, "
-                              "ave acc: %f, speed: %f steps/s" %
-                              (steps,
-                               np.sum(total_cost) / np.sum(total_num_seqs),
-                               np.sum(total_acc) / np.sum(total_num_seqs),
-                               args.skip_steps / used_time))
-                        total_cost, total_acc, total_num_seqs = [], [], []
-                        time_begin = time.time()
-
-                    if steps % args.validation_steps == 0:
-                        total_eval_cost, total_eval_acc, total_eval_num_seqs = [], [], []
-                        cnn_net.eval()
-                        eval_steps = 0
-                        for eval_batch_id, eval_data in enumerate(
-                                eval_data_generator()):
-                            eval_np_doc = np.array([
-                                np.pad(x[0][0:args.padding_size],
-                                       (0, args.padding_size -
-                                        len(x[0][0:args.padding_size])),
-                                       'constant',
-                                       constant_values=(args.vocab_size))
-                                for x in eval_data
-                            ]).astype('int64').reshape(1, -1)
-                            eval_label = to_variable(
-                                np.array([x[1] for x in eval_data]).astype(
-                                    'int64').reshape(args.batch_size, 1))
-                            eval_doc = to_variable(eval_np_doc.reshape(-1, 1))
-                            eval_avg_cost, eval_prediction, eval_acc = cnn_net(
-                                eval_doc, eval_label)
-
-                            eval_np_mask = (
-                                eval_np_doc != args.vocab_size).astype('int32')
-                            eval_word_num = np.sum(eval_np_mask)
-                            total_eval_cost.append(eval_avg_cost.numpy() *
-                                                   eval_word_num)
-                            total_eval_acc.append(eval_acc.numpy() *
-                                                  eval_word_num)
-                            total_eval_num_seqs.append(eval_word_num)
-
-                            eval_steps += 1
-
-                        time_end = time.time()
-                        used_time = time_end - time_begin
-                        print(
-                            "Final validation result: step: %d, ave loss: %f, "
-                            "ave acc: %f, speed: %f steps/s" %
-                            (steps, np.sum(total_eval_cost) /
-                             np.sum(total_eval_num_seqs), np.sum(total_eval_acc)
-                             / np.sum(total_eval_num_seqs),
-                             eval_steps / used_time))
-                        time_begin = time.time()
-
-                    if steps % args.save_steps == 0:
-                        save_path = "save_dir_" + str(steps)
-                        print('save model to: ' + save_path)
-                        fluid.dygraph.save_persistables(cnn_net.state_dict(),
-                                                        save_path)
-
-                    if enable_profile:
-                        print('save profile result into /tmp/profile_file')
-                        return
-                    end = Tools.time()
+                if steps % args.save_steps == 0:
+                    save_path = "save_dir_" + str(steps)
+                    print('save model to: ' + save_path)
+                    fluid.dygraph.save_persistables(cnn_net.state_dict(),
+                                                    save_path)
+                end = Tools.time()
 
 
 def infer():
@@ -243,7 +215,7 @@ def infer():
         print('Do inferring ...... ')
         total_acc, total_num_seqs = [], []
 
-        restore = fluid.dygraph.load_persistables(args.checkpoints)
+        restore, _ = fluid.dygraph.load_persistables(args.checkpoints)
         cnn_net_infer.load_dict(restore)
         cnn_net_infer.eval()
 

@@ -22,13 +22,13 @@ class SimpleConvPool(fluid.dygraph.Layer):
                  num_channels,
                  num_filters,
                  filter_size,
-                 use_cudnn=False,
+                 use_cudnn=True,
                  batch_size=None):
         super(SimpleConvPool, self).__init__(name_scope)
         self.batch_size = batch_size
         self._conv2d = Conv2D(
             self.full_name(),
-            num_channels=num_channels,
+            #num_channels=num_channels,
             num_filters=num_filters,
             filter_size=filter_size,
             padding=[1, 1],

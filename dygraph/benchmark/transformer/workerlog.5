@@ -1,0 +1,48 @@
+grep: warning: GREP_OPTIONS is deprecated; please use an alias or script
+I0802 03:36:36.713057  9338 nccl_context.cc:120] init nccl context nranks: 8 local rank: 5 gpu id: 5
+W0802 03:36:40.241145  9338 device_context.cc:259] Please NOTE: device: 5, CUDA Capability: 61, Driver API Version: 10.1, Runtime API Version: 9.0
+W0802 03:36:40.245681  9338 device_context.cc:267] device: 5, cuDNN Version: 7.2.
+W0802 03:36:40.245733  9338 device_context.cc:293] WARNING: device: 5. The installed Paddle is compiled with CUDNN 7.3, but CUDNN version in your machine is 7.2, which may cause serious incompatible bug. Please recompile or reinstall Paddle with compatible CUDNN version.
+
+start data reader (trainers_num: 8, trainer_id: 5)
+start data reader (trainers_num: 8, trainer_id: 5)
+epoch: [0][ 1/13]	Time  2.592 ( 2.592)	Data  0.155 ( 0.155)
+pass num : 0, batch_id: 1, dy_graph avg loss: [1.1553646]
+epoch: [0][ 2/13]	Time  1.560 ( 2.076)	Data  0.049 ( 0.102)
+pass num : 0, batch_id: 2, dy_graph avg loss: [1.1527216]
+epoch: [0][ 3/13]	Time  1.285 ( 1.813)	Data  0.051 ( 0.085)
+pass num : 0, batch_id: 3, dy_graph avg loss: [1.1518492]
+epoch: [0][ 4/13]	Time  1.300 ( 1.684)	Data  0.047 ( 0.075)
+pass num : 0, batch_id: 4, dy_graph avg loss: [1.1476728]
+epoch: [0][ 5/13]	Time  1.430 ( 1.633)	Data  0.047 ( 0.070)
+pass num : 0, batch_id: 5, dy_graph avg loss: [1.1457008]
+epoch: [0][ 6/13]	Time  1.271 ( 1.573)	Data  0.046 ( 0.066)
+pass num : 0, batch_id: 6, dy_graph avg loss: [1.1439983]
+epoch: [0][ 7/13]	Time  1.576 ( 1.573)	Data  0.047 ( 0.063)
+pass num : 0, batch_id: 7, dy_graph avg loss: [1.1405432]
+epoch: [0][ 8/13]	Time  1.277 ( 1.536)	Data  0.048 ( 0.061)
+pass num : 0, batch_id: 8, dy_graph avg loss: [1.1369957]
+epoch: [0][ 9/13]	Time  1.612 ( 1.545)	Data  0.108 ( 0.066)
+pass num : 0, batch_id: 9, dy_graph avg loss: [1.1367716]
+epoch: [0][10/13]	Time  1.233 ( 1.514)	Data  0.051 ( 0.065)
+pass num : 0, batch_id: 10, dy_graph avg loss: [1.132372]
+epoch: [0][11/13]	Time  1.366 ( 1.500)	Data  0.050 ( 0.063)
+pass num : 0, batch_id: 11, dy_graph avg loss: [1.1326704]
+epoch: [0][12/13]	Time  1.389 ( 1.491)	Data  0.051 ( 0.062)
+pass num : 0, batch_id: 12, dy_graph avg loss: [1.1279085]
+Traceback (most recent call last):
+  File "train.py", line 1182, in <module>
+    train()
+  File "train.py", line 1165, in train
+    transformer.apply_collective_grads()
+  File "/usr/local/lib/python3.6/site-packages/paddle/fluid/dygraph/parallel.py", line 186, in apply_collective_grads
+    collective._allreduce(g_var, g_var, sync_mode=True)
+  File "/usr/local/lib/python3.6/site-packages/paddle/fluid/layers/collective.py", line 48, in _allreduce
+    "sync_mode": sync_mode})
+  File "/usr/local/lib/python3.6/site-packages/paddle/fluid/layer_helper.py", line 43, in append_op
+    return self.main_program.current_block().append_op(*args, **kwargs)
+  File "/usr/local/lib/python3.6/site-packages/paddle/fluid/framework.py", line 1762, in append_op
+    kwargs.get("stop_gradient", False))
+  File "/usr/local/lib/python3.6/site-packages/paddle/fluid/dygraph/tracer.py", line 59, in trace_op
+    framework._current_expected_place(), stop_gradient)
+KeyboardInterrupt

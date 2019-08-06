@@ -150,7 +150,7 @@ def train_mnist():
     epoch_num = 10
     if args.benchmark:
         epoch_num = 1
-    BATCH_SIZE = 256
+    BATCH_SIZE = 32
     with fluid.dygraph.guard():
         mnist = MNIST("mnist")
         #adam = AdamOptimizer(learning_rate=0.001)

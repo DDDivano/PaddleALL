@@ -374,8 +374,6 @@ def train_resnet():
             print("epoch %d | batch step %d, loss %0.3f acc1 %0.3f acc5 %0.3f" % \
                   (eop, batch_id, total_loss / total_sample, \
                    total_acc1 / total_sample, total_acc5 / total_sample))
-            resnet.eval()
-            eval(resnet, test_reader)
 
 
 if __name__ == '__main__':

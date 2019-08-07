@@ -28,7 +28,7 @@ import sys
 import argparse
 from benchmark import AverageMeter, ProgressMeter, Tools
 
-batch_size = 64
+batch_size = 32
 epoch = 120
 IMAGENET1000 = 1281167
 base_lr = 0.1

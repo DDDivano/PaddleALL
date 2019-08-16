@@ -31,6 +31,7 @@ def parse_args():
         type=ast.literal_eval,
         default=False,
         help="The flag indicating whether to shuffle instances in each pass.")
+    parser.add_argument("-e", "--epoch", default=200, help="set epoch")
     args = parser.parse_args()
     return args
 
@@ -1110,7 +1111,7 @@ def train():
     train models
     :return:
     """
-
+    epoch = int(args.epoch)
     trainer_count = fluid.dygraph.parallel.Env().nranks
     place = fluid.CUDAPlace(fluid.dygraph.parallel.Env().dev_id) \
         if args.use_data_parallel else fluid.CUDAPlace(0)
@@ -1142,7 +1143,7 @@ def train():
         if args.use_data_parallel:
             reader = fluid.contrib.reader.distributed_batch_reader(reader)
 
-        for i in range(200):
+        for i in range(epoch):
             dy_step = 0
             batch_time = AverageMeter('Time', ':6.3f')
             data_time = AverageMeter('Data', ':6.3f')

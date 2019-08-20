@@ -263,7 +263,6 @@ def train_mnist(args):
                     print("Loss at epoch {} step {}: {:}".format(
                         epoch, batch_id, avg_loss.numpy()))
                 end = Tools.time()
-
             mnist.eval()
             test_cost, test_acc = test_mnist(test_reader, mnist, BATCH_SIZE)
             mnist.train()

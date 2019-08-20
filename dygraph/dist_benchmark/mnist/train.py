@@ -174,7 +174,7 @@ def inference_mnist():
 
 def train_mnist(args):
     epoch_num = args.epoch
-    BATCH_SIZE = 64
+    BATCH_SIZE = 32
 
     trainer_count = fluid.dygraph.parallel.Env().nranks
     place = fluid.CUDAPlace(fluid.dygraph.parallel.Env().dev_id) \
@@ -262,6 +262,7 @@ def train_mnist(args):
                 if batch_id % 100 == 0:
                     print("Loss at epoch {} step {}: {:}".format(
                         epoch, batch_id, avg_loss.numpy()))
+                end = Tools.time()
 
             mnist.eval()
             test_cost, test_acc = test_mnist(test_reader, mnist, BATCH_SIZE)

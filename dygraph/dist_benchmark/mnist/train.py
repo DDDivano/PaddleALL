@@ -272,11 +272,6 @@ def train_mnist(args):
             print("Loss at epoch {} , Test avg_loss is: {}, acc is: {}".format(
                 epoch, test_cost, test_acc))
 
-        fluid.dygraph.save_persistables(mnist.state_dict(), "save_dir")
-        print("checkpoint saved")
-
-        inference_mnist()
-
 
 if __name__ == '__main__':
     args = parse_args()

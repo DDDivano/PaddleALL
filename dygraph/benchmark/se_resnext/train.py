@@ -38,7 +38,7 @@ parser.add_argument(
         default=False,
         help="The flag indicating whether to shuffle instances in each pass.")
 args = parser.parse_args()
-batch_size = 64
+batch_size = 32
 train_parameters = {
     "input_size": [3, 224, 224],
     "input_mean": [0.485, 0.456, 0.406],

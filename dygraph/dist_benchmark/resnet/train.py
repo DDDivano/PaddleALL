@@ -368,7 +368,7 @@ def train_resnet():
                 total_acc5 += acc_top5.numpy()
                 total_sample += 1
                 #print("epoch id: %d, batch step: %d, loss: %f" % (eop, batch_id, dy_out))
-                if batch_id % 10 == 0:
+                if batch_id % 1 == 0:
                     progress.print(batch_id)
                     print( "epoch %d | batch step %d, loss %0.3f acc1 %0.3f acc5 %0.3f" % \
                            ( eop, batch_id, total_loss / total_sample, \

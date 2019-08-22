@@ -52,7 +52,7 @@ def parse_args():
 args = parse_args()
 
 if args.benchmark:
-    epoch = 1
+    epoch = 2
 
 def optimizer_setting():
 

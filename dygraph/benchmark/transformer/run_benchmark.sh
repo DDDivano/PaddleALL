@@ -1,1 +1,1 @@
-python3.6 train.py --epoch 1
+python3.6 train.py --epoch 2

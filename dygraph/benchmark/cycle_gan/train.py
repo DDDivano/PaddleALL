@@ -76,9 +76,9 @@ def train(args):
             pro_batch_time = AverageMeter('Time', ':6.3f')
             pro_data_time = AverageMeter('Data', ':6.3f')
             progress = ProgressMeter(max_images_num, pro_batch_time, pro_data_time, prefix="epoch: [{}]".format(epoch))
-            end = Tools.time()
 
             batch_id = 0
+            end = Tools.time()
             for i in range(max_images_num):
 
                 data_A = next(A_reader)
@@ -143,10 +143,9 @@ def train(args):
                 optimizer3.minimize(d_loss_B,parameter_list=vars_db)
 
                 cycle_gan.clear_gradients()
-
+                pro_batch_time.update(Tools.time() - end)
                 batch_time = time.time() - s_time
                 t_time += batch_time
-                pro_batch_time.update(Tools.time() - end)
                 # print(
                 #     "epoch{}; batch{}; g_loss:{}; d_A_loss: {}; d_B_loss:{} \
                 #     ; \n g_A_loss: {}; g_A_cyc_loss: {}; g_A_idt_loss: {}\
@@ -181,7 +180,8 @@ def train(args):
                     progress.print(batch_id)
                     print("epoch{}; | batch step{}; g_A_loss:{}; d_A_loss:{}" \
                         .format(epoch, batch_id, g_A_loss.numpy()[0], d_loss_A.numpy()[0]))
-
+                if batch_id == 500:
+                    break
                 end = Tools.time()
 
             if args.save_checkpoints:

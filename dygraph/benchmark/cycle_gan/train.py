@@ -9,7 +9,6 @@ import argparse
 import functools
 import time
 import numpy as np
-from scipy.misc import imsave
 import paddle.fluid as fluid
 import data_reader
 from utility import add_arguments, print_arguments, ImagePool
@@ -184,8 +183,7 @@ def train(args):
                     break
                 end = Tools.time()
 
-            if args.save_checkpoints:
-                fluid.dygraph.save_persistables(cycle_gan.state_dict(),args.output+"/checkpoints/{}".format(epoch))
+            
 
 if __name__ == "__main__":
     args = parser.parse_args()

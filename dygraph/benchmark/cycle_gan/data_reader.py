@@ -22,7 +22,7 @@ import numpy as np
 A_LIST_FILE = "/root/.cache/paddle/dataset/horse2zebra/trainA.txt"
 B_LIST_FILE = "/root/.cache/paddle/dataset/horse2zebra/trainB.txt"
 A_TEST_LIST_FILE = "/root/.cache/paddle/dataset/horse2zebra/testA.txt"
-B_TEST_LIST_FILE = "/root/.cache/paddle/datasethorse2zebra/testB.txt"
+B_TEST_LIST_FILE = "/root/.cache/paddle/dataset/horse2zebra/testB.txt"
 IMAGES_ROOT = "/root/.cache/paddle/dataset/horse2zebra/"
 
 def image_shape():

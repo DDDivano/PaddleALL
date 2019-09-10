@@ -356,7 +356,6 @@ def train_resnet():
                 optimizer.minimize(avg_loss)
                 resnet.clear_gradients()
                 batch_time.update(Tools.time() - end)
-                framework._dygraph_tracer_._clear_ops()
 
                 total_loss += dy_out
                 total_acc1 += acc_top1.numpy()

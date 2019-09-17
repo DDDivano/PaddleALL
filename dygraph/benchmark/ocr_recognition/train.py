@@ -520,11 +520,11 @@ def train(args):
         if args.benchmark:
             epoch_num = 1
         j = 0
-        for i in train_reader():
-            j += 1
-            if j % 100 == 0:
-                print(j)
-        print(j)
+        #for i in train_reader():
+        #    j += 1
+        #    if j % 100 == 0:
+        #        print(j)
+        #print(j)
         #total_pass = len(list(train_reader()))
         #print(total_pass)
         for epoch in range(epoch_num):

@@ -264,7 +264,7 @@ def train_ptb_lm():
         init_scale = 0.1
         max_grad_norm = 5.0
         epoch_start_decay = 4
-        max_epoch = 13
+        max_epoch = 2
         dropout = 0.0
         lr_decay = 0.5
         base_learning_rate = 1.0

@@ -565,7 +565,6 @@ def train(args):
                 optimizer.minimize(avg_loss, grad_clip=grad_clip)
                 ocr_attention.clear_gradients()
                 batch_time.update(Tools.time() - end)
-                framework._dygraph_tracer()._clear_ops()
 
                 if batch_id > 0 and batch_id % 50 == 0:
                     progress.print(batch_id)

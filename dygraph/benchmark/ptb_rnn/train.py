@@ -32,7 +32,7 @@ from benchmark import AverageMeter, ProgressMeter, Tools
 parser = argparse.ArgumentParser()
 parser.add_argument("-b", "--benchmark", action="store_true", help="turn on benchmark")
 parser.add_argument("-m", "--model_type", default="small", help="model type")
-parser.add_argument("-d", "--data_path", default="data/simple-examples/data/", help="data path")
+parser.add_argument("-d", "--data_path", default="/root/.cache/paddle/dataset/simple-examples/data/", help="data path")
 
 args = parser.parse_args()
 #import fluid.dygraph_grad_clip as dygraph_clip

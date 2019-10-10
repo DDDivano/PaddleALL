@@ -384,7 +384,7 @@ def train_resnet():
                    total_acc1 / total_sample, total_acc5 / total_sample))
             resnet.eval()
             eval(resnet, test_reader)
-            fluid.dygraph.save_persistables(resnet.state_dict(), 'resnet_params')
+            # fluid.dygraph.save_persistables(resnet.state_dict(), 'resnet_params')
 
 
 if __name__ == '__main__':

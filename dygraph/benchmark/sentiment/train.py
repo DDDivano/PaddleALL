@@ -188,71 +188,69 @@ def train():
                            np.sum(total_eval_num_seqs), eval_steps / used_time))
                     time_begin = time.time()
 
-                if steps % args.save_steps == 0:
-                    save_path = "save_dir_" + str(steps)
-                    print('save model to: ' + save_path)
-                    fluid.dygraph.save_persistables(cnn_net.state_dict(),
-                                                    save_path)
+                # if steps % args.save_steps == 0:
+                #     save_path = "save_dir_" + str(steps)
+                #     print('save model to: ' + save_path)
+                #     fluid.dygraph.save_persistables(cnn_net.state_dict(),
+                #                                     save_path)
                 end = Tools.time()
 
 
-def infer():
-    with fluid.dygraph.guard(place):
-        processor = reader.SentaProcessor(
-            data_dir=args.data_dir,
-            vocab_path=args.vocab_path,
-            random_seed=args.random_seed)
+# def infer():
+#     with fluid.dygraph.guard(place):
+#         processor = reader.SentaProcessor(
+#             data_dir=args.data_dir,
+#             vocab_path=args.vocab_path,
+#             random_seed=args.random_seed)
 
-        infer_data_generator = processor.data_generator(
-            batch_size=args.batch_size,
-            phase='infer',
-            epoch=args.epoch,
-            shuffle=False)
+#         infer_data_generator = processor.data_generator(
+#             batch_size=args.batch_size,
+#             phase='infer',
+#             epoch=args.epoch,
+#             shuffle=False)
 
-        cnn_net_infer = nets.CNN("cnn_net", args.vocab_size, args.batch_size,
-                                 args.padding_size)
+#         cnn_net_infer = nets.CNN("cnn_net", args.vocab_size, args.batch_size,
+#                                  args.padding_size)
 
-        print('Do inferring ...... ')
-        total_acc, total_num_seqs = [], []
+#         print('Do inferring ...... ')
+#         total_acc, total_num_seqs = [], []
 
-        restore, _ = fluid.dygraph.load_persistables(args.checkpoints)
-        cnn_net_infer.load_dict(restore)
-        cnn_net_infer.eval()
+#         restore, _ = fluid.dygraph.load_persistables(args.checkpoints)
+#         cnn_net_infer.load_dict(restore)
+#         cnn_net_infer.eval()
 
-        steps = 0
-        time_begin = time.time()
-        for batch_id, data in enumerate(infer_data_generator()):
-            steps += 1
-            np_doc = np.array([
-                np.pad(x[0][0:args.padding_size],
-                       (0, args.padding_size - len(x[0][0:args.padding_size])),
-                       'constant',
-                       constant_values=(args.vocab_size)) for x in data
-            ]).astype('int64').reshape(-1, 1)
-            doc = to_variable(np_doc)
-            label = to_variable(
-                np.array([x[1] for x in data]).astype('int64').reshape(
-                    args.batch_size, 1))
+#         steps = 0
+#         time_begin = time.time()
+#         for batch_id, data in enumerate(infer_data_generator()):
+#             steps += 1
+#             np_doc = np.array([
+#                 np.pad(x[0][0:args.padding_size],
+#                        (0, args.padding_size - len(x[0][0:args.padding_size])),
+#                        'constant',
+#                        constant_values=(args.vocab_size)) for x in data
+#             ]).astype('int64').reshape(-1, 1)
+#             doc = to_variable(np_doc)
+#             label = to_variable(
+#                 np.array([x[1] for x in data]).astype('int64').reshape(
+#                     args.batch_size, 1))
 
-            _, _, acc = cnn_net_infer(doc, label)
+#             _, _, acc = cnn_net_infer(doc, label)
 
-            mask = (np_doc != args.vocab_size).astype('int32')
-            word_num = np.sum(mask)
-            total_acc.append(acc.numpy() * word_num)
-            total_num_seqs.append(word_num)
+#             mask = (np_doc != args.vocab_size).astype('int32')
+#             word_num = np.sum(mask)
+#             total_acc.append(acc.numpy() * word_num)
+#             total_num_seqs.append(word_num)
 
-        time_end = time.time()
-        used_time = time_end - time_begin
+#         time_end = time.time()
+#         used_time = time_end - time_begin
 
-        print("Final infer result: ave acc: %f, speed: %f steps/s" %
-              (np.sum(total_acc) / np.sum(total_num_seqs), steps / used_time))
+#         print("Final infer result: ave acc: %f, speed: %f steps/s" %
+#               (np.sum(total_acc) / np.sum(total_num_seqs), steps / used_time))
 
 
 def main():
     if args.do_train:
         train()
-    elif args.do_infer:
-        infer()
 
 
 if __name__ == '__main__':

@@ -144,32 +144,32 @@ def test_mnist(reader, model, batch_size):
     return avg_loss_val_mean, acc_val_mean
 
 
-def inference_mnist():
-    place = fluid.CUDAPlace(fluid.dygraph.parallel.Env().dev_id) \
-        if args.use_data_parallel else fluid.CUDAPlace(0)
-    with fluid.dygraph.guard(place):
-        mnist_infer = MNIST("mnist")
-        # load checkpoint
-        model_dict, _ = fluid.dygraph.load_persistables("save_dir")
-        mnist_infer.load_dict(model_dict)
-        print("checkpoint loaded")
+# def inference_mnist():
+#     place = fluid.CUDAPlace(fluid.dygraph.parallel.Env().dev_id) \
+#         if args.use_data_parallel else fluid.CUDAPlace(0)
+#     with fluid.dygraph.guard(place):
+#         mnist_infer = MNIST("mnist")
+#         # load checkpoint
+#         model_dict, _ = fluid.dygraph.load_persistables("save_dir")
+#         mnist_infer.load_dict(model_dict)
+#         print("checkpoint loaded")
 
-        # start evaluate mode
-        mnist_infer.eval()
+#         # start evaluate mode
+#         mnist_infer.eval()
 
-        def load_image(file):
-            im = Image.open(file).convert('L')
-            im = im.resize((28, 28), Image.ANTIALIAS)
-            im = np.array(im).reshape(1, 1, 28, 28).astype(np.float32)
-            im = im / 255.0 * 2.0 - 1.0
-            return im
+#         def load_image(file):
+#             im = Image.open(file).convert('L')
+#             im = im.resize((28, 28), Image.ANTIALIAS)
+#             im = np.array(im).reshape(1, 1, 28, 28).astype(np.float32)
+#             im = im / 255.0 * 2.0 - 1.0
+#             return im
 
-        cur_dir = os.path.dirname(os.path.realpath(__file__))
-        tensor_img = load_image(cur_dir + '/image/infer_3.png')
+#         cur_dir = os.path.dirname(os.path.realpath(__file__))
+#         tensor_img = load_image(cur_dir + '/image/infer_3.png')
 
-        results = mnist_infer(to_variable(tensor_img))
-        lab = np.argsort(results.numpy())
-        print("Inference result of image/infer_3.png is: %d" % lab[0][-1])
+#         results = mnist_infer(to_variable(tensor_img))
+#         lab = np.argsort(results.numpy())
+#         print("Inference result of image/infer_3.png is: %d" % lab[0][-1])
 
 
 def train_mnist(args):

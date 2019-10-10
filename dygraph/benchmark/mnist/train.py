@@ -184,7 +184,6 @@ def train_mnist():
                 avg_loss = fluid.layers.mean(loss)
                 avg_loss.backward()
                 adam.minimize(avg_loss)
-                # save checkpoint
                 mnist.clear_gradients()
                 batch_time.update(Tools.time() - end)
                 dy_out = avg_loss.numpy()[0]

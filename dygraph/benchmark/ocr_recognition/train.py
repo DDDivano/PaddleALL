@@ -578,7 +578,7 @@ def train(args):
                     ocr_attention.train()
 
                 batch_id +=1
-                if batch_id == 2000:
+                if batch_id == 500:
                     break
 
                 end = Tools.time()
